@@ -7,7 +7,7 @@ public class Calculator {
     final  double pi =3.142;
     public void sub(int a, int b) {
         if ("zed" == "bed"){
-
+            System.out.println("I'm a baddie!!!");
         }
     }
 }
