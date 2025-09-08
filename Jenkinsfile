@@ -1,6 +1,6 @@
 pipeline {
 
-    agent { label 'calculator' }
+    agent any
 
     stages {
         stage('Checkout') {
