@@ -1,65 +1,68 @@
 pipeline {
-    agent any   // 👈 works on any available agent
+
+    agent { label 'calculator' }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/QuantumEmpress/Calculator.git', branch: 'main'
+                git url: "https://github.com/QuantumEmpress/Calculator.git", branch: "main"
             }
         }
-
-        stage('Compile') {
+        stage('Linux Permission') {
             steps {
                 sh "chmod +x gradlew"
-                sh "./gradlew compileJava"
             }
         }
-
         stage('Unit Test') {
             steps {
-                sh "./gradlew test"
+                sh "./gradlew test "
             }
         }
-
         stage('Code Coverage') {
             steps {
                 sh "./gradlew jacocoTestReport"
                 publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/jacoco/test/html',
-                    reportFiles: 'index.html',
-                    reportName: 'JaCoCo Report'
-                ])
+                                      allowMissing: false,
+                                      alwaysLinkToLastBuild: false,
+                                      keepAll: true,
+                                      reportDir: 'build/reports/jacoco/test/html',
+                                      reportFiles: 'index.html',
+                                      reportName: 'JaCoCo Report'
+                                  ])
                 sh "./gradlew jacocoTestCoverageVerification"
             }
         }
-
-        stage("Static Code Analysis") {
+        stage("Static code analysis") {
+               steps {
+                   sh "./gradlew checkstyleMain"
+                   publishHTML(target: [
+                                      allowMissing: false,
+                                      alwaysLinkToLastBuild: false,
+                                      keepAll: true,
+                                      reportDir: 'build/reports/checkstyle',
+                                      reportFiles: 'main.html',
+                                      reportName: 'Checkstyle Report'
+                                  ])
+               }
+        }
+        stage('Build') {
             steps {
-                sh "./gradlew checkstyleMain"
-                publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/checkstyle',
-                    reportFiles: 'main.html',
-                    reportName: 'Checkstyle Report'
-                ])
+                sh "./gradlew build"
             }
         }
-    }
-
+        stage('Deploy') {
+            steps {
+                sh "docker tag dorati-app localhost:5000/dorati"
+                sh "docker push localhost:5000/dorati"
+            }
+        }
+        }
     post {
         always {
             mail to: 'prexcy99@gmail.com',
                 subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
-                body: "Your build completed. Please check: ${env.BUILD_URL}"
-
-            slackSend channel: '#my-dev-diary',
-                color: (currentBuild.currentResult == 'SUCCESS' ? 'good' : 'danger'),
-                message: "Pipeline *${currentBuild.fullDisplayName}* finished with status: *${currentBuild.currentResult}*"
+                body: "Your build completed, please check: ${env.BUILD_URL}"
+            slackSend channel: '#oma-test-channel', color: 'green', message: "The pipeline ${currentBuild.fullDisplayName} result."
         }
     }
 }
