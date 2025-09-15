@@ -1,18 +1,10 @@
 pipeline {
-    agent {
-        label "pipeline"
-    }
+    agent any
 
     stages {
         stage('Checkout') {
             steps {
-                git url: "https://github.com/QuantumEmpress/calculator.git", branch: "main"
-            }
-        }
-
-        stage('Check Docker Installation') {
-            steps {
-                bat "docker version"
+                git url: 'https://github.com/QuantumEmpress/calculator.git', branch: 'master'
             }
         }
 
@@ -27,7 +19,7 @@ pipeline {
                 bat "./gradlew jacocoTestReport"
                 publishHTML(target: [
                     allowMissing: false,
-                    alwaysLinkToLastBuild: false,
+                    alwaysLinkToLastBuild: true,
                     keepAll: true,
                     reportDir: 'build/reports/jacoco/test/html',
                     reportFiles: 'index.html',
@@ -37,12 +29,12 @@ pipeline {
             }
         }
 
-        stage("Static Code Analysis") {
+        stage('Static Code Analysis') {
             steps {
                 bat "./gradlew checkstyleMain"
                 publishHTML(target: [
                     allowMissing: false,
-                    alwaysLinkToLastBuild: false,
+                    alwaysLinkToLastBuild: true,
                     keepAll: true,
                     reportDir: 'build/reports/checkstyle',
                     reportFiles: 'main.html',
@@ -53,31 +45,14 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat "./gradlew clean"
-                bat "./gradlew build"
+                bat "./gradlew clean build"
             }
         }
 
-        stage("Docker Login") {
+        stage('Docker Build & Push') {
             steps {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding',
-                                  credentialsId: 'docker-hub',
-                                  usernameVariable: 'USERNAME',
-                                  passwordVariable: 'PASSWORD']]) {
-                    bat "docker login --username %USERNAME% --password %PASSWORD%"
-                }
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
-                bat "docker build -t QuantumEmpress/calculator ."
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                bat "docker push QuantumEmpress/calculator"
+                bat "docker build -t quantumempress/calculator ."
+                bat "docker push quantumempress/calculator"
             }
         }
     }
@@ -85,12 +60,12 @@ pipeline {
     post {
         always {
             mail to: 'prexcy99@gmail.com',
-                 subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Your build completed, please check: ${env.BUILD_URL}"
+                subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
+                body: "Your build completed, please check: ${env.BUILD_URL}"
 
             slackSend channel: '#oma-test-channel',
                       color: 'green',
-                      message: "The pipeline ${currentBuild.fullDisplayName} result."
+                      message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
         }
     }
 }
