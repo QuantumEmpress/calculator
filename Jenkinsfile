@@ -1,6 +1,8 @@
 pipeline {
 
-    agent any
+    agent {
+    label "pipeline"
+    }
 
     stages {
         stage('Checkout') {
@@ -10,18 +12,17 @@ pipeline {
         }
         stage('Linux Permission') {
             steps {
-                sh "chmod +x gradlew"
-                sh "docker version"
+                bat "docker version"
             }
         }
         stage('Unit Test') {
             steps {
-                sh "./gradlew test "
+                bat "./gradlew test "
             }
         }
         stage('Code Coverage') {
             steps {
-                sh "./gradlew jacocoTestReport"
+                bat "./gradlew jacocoTestReport"
                 publishHTML(target: [
                                       allowMissing: false,
                                       alwaysLinkToLastBuild: false,
@@ -30,12 +31,12 @@ pipeline {
                                       reportFiles: 'index.html',
                                       reportName: 'JaCoCo Report'
                                   ])
-                sh "./gradlew jacocoTestCoverageVerification"
+                bat "./gradlew jacocoTestCoverageVerification"
             }
         }
         stage("Static code analysis") {
                steps {
-                   sh "./gradlew checkstyleMain"
+                   bat"./gradlew checkstyleMain"
                    publishHTML(target: [
                                       allowMissing: false,
                                       alwaysLinkToLastBuild: false,
@@ -48,28 +49,28 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh "./gradlew clean"
-                sh "./gradlew build"
+                bat "./gradlew clean"
+                bat "./gradlew build"
             }
         }
 
-        stage("Docker login") {
-                          steps {
-                            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker-hub',
-                                              usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
-                              sh "docker login --username $USERNAME --password $PASSWORD"
-                            }
-                          }
-                        }
+//         stage("Docker login") {
+//                           steps {
+//                             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker-hub',
+//                                               usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+//                               bat "docker login --username $USERNAME --password $PASSWORD"
+//                             }
+//                           }
+//                         }
 
         stage ('docker build'){}
                 steps{
-                    sh "docker push"
+                    bat "docker build  -t QuantumEmpress/calculator"
                 }
         stage('Deploy') {
             steps {
-                sh "docker tag dorati-app localhost:5000/dorati"
-                sh "docker push localhost:5000/dorati"
+//                 bat "docker tag dorati-app localhost:5000/dorati"\
+                bat "docker push QuantumEmpress/calculator"
             }
         }
         }
