@@ -6,7 +6,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: "https://github.com/QuantumEmpress/Calculator.git", branch: "main"
+                git url: "https://github.com/QuantumEmpress/calculator.git", branch: "main"
             }
         }
 
