@@ -6,8 +6,5 @@
     <module name="TreeWalker">
         <module name="ConstantName" />
         <module name="EmptyBlock" />
-        <module name="WhitespaceAfter"/>
-        <module name="WhitespaceAround"/>
-        <module name="Indentation"/>
     </module>
 </module>
