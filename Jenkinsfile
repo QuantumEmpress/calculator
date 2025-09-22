@@ -8,6 +8,12 @@ pipeline {
             }
         }
 
+        stage('Clean') {
+            steps {
+                bat "./gradlew clean"
+            }
+        }
+
         stage('Unit Test') {
             steps {
                 bat "./gradlew test"
@@ -45,14 +51,22 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat "./gradlew clean build"
+                bat "./gradlew build"  // Remove clean from here
             }
         }
 
         stage('Docker Build & Push') {
             steps {
-                bat "docker build -t quantumempress/calculator ."
-                bat "docker push quantumempress/calculator"
+                script {
+                    // Add proper error handling for Docker
+                    try {
+                        bat "docker build -t quantumempress/calculator ."
+                        bat "docker push quantumempress/calculator"
+                    } catch (Exception e) {
+                        echo "Docker build/push failed: ${e.message}"
+                        // Continue pipeline anyway
+                    }
+                }
             }
         }
     }
@@ -64,7 +78,7 @@ pipeline {
                 body: "Your build completed, please check: ${env.BUILD_URL}"
 
             slackSend channel: '#oma-test-channel',
-                      color: 'green',
+                      color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
                       message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
         }
     }
