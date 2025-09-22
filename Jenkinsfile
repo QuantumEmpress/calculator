@@ -61,8 +61,20 @@ pipeline {
         }
 
         stage('Docker Build & Push') {
+            // Add a condition to skip this stage if credentials are missing
+            when {
+                expression {
+                    try {
+                        withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'TEST_USER', passwordVariable: 'TEST_PASS')]) {
+                            return true
+                        }
+                    } catch (Exception e) {
+                        echo "Docker credentials not found, skipping Docker stage"
+                        return false
+                    }
+                }
+            }
             environment {
-                // Reference your Docker Hub credentials here
                 DOCKER_CREDS = credentials('docker-hub-credentials')
             }
             steps {
