@@ -74,6 +74,18 @@ pipeline {
                 }
             }
         }
+        stage('docker run') {
+                 steps {
+                     bat "docker run quantumempress/calculator"
+                 }
+        }
+
+         stage('Acceptance Test') {
+                         steps {
+                             bat "./gradlew acceptanceTest"
+                         }
+                }
+
     }
 
     post {
@@ -88,3 +100,7 @@ pipeline {
         }
     }
 }
+
+
+
+
