@@ -70,7 +70,7 @@ pipeline {
         }
         stage('docker run') {
                  steps {
-                     bat "docker run quantumempress/calculator"
+                     bat "docker run -d -p 9090:9090 --name calculator quantumempress/calculator"
                  }
         }
 
