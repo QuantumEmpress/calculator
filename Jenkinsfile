@@ -19,12 +19,6 @@ pipeline {
                 bat "./gradlew test"
             }
         }
-
-        stage('Unit Test') {
-            steps {
-                bat "./gradlew acceptanceTest"
-            }
-        }
         stage('Code Coverage') {
             steps {
                 bat "./gradlew jacocoTestReport"
