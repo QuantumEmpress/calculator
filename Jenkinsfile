@@ -1,5 +1,5 @@
 pipeline {
-    agent {label "pipeline"}
+    agent { label "pipeline" }
 
     stages {
         stage('Checkout') {
@@ -19,6 +19,7 @@ pipeline {
                 bat "./gradlew test"
             }
         }
+
         stage('Code Coverage') {
             steps {
                 bat "./gradlew jacocoTestReport"
@@ -50,45 +51,48 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat "./gradlew build"  // Remove clean from here
+                bat "./gradlew build"
             }
         }
 
         stage('Docker Build & Push') {
             steps {
                 script {
-                    // Add proper error handling for Docker
                     try {
                         bat "docker build -t quantumempress/calculator ."
                         bat "docker push quantumempress/calculator"
                     } catch (Exception e) {
                         echo "Docker build/push failed: ${e.message}"
-                        // Continue pipeline anyway
                     }
                 }
             }
         }
-        stage('docker run') {
-                 steps {
-                    sleep 60
-                    bat docker run -d -p 9091:9090 --name calculator-om quantumempress/calculator
 
-                 }
+        stage('Docker Run') {
+            steps {
+                script {
+                    // Stop old container if running
+                    bat "docker stop calculator-om || echo 'No existing container to stop'"
+                    bat "docker rm calculator-om || echo 'No existing container to remove'"
+
+                    // Run new container safely on a free port
+                    bat "docker run -d -p 9091:9090 --name calculator-om quantumempress/calculator"
+                }
+            }
         }
 
-         stage('Acceptance Test') {
-                         steps {
-                             bat "./gradlew acceptanceTest"
-                         }
-                }
-
+        stage('Acceptance Test') {
+            steps {
+                bat "./gradlew acceptanceTest"
+            }
+        }
     }
 
     post {
         always {
             mail to: 'prexcy99@gmail.com',
-                subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
-                body: "Your build completed, please check: ${env.BUILD_URL}"
+                 subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
+                 body: "Your build completed. Check it here: ${env.BUILD_URL}"
 
             slackSend channel: '#oma-test-channel',
                       color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
@@ -96,7 +100,3 @@ pipeline {
         }
     }
 }
-
-
-
-
