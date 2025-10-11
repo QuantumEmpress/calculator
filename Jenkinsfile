@@ -71,7 +71,8 @@ pipeline {
         stage('docker run') {
                  steps {
                     sleep 60
-                    bat "docker run -d -p 8080:9090 --name calculator-om quantumempress/calculator"
+                    bat docker run -d -p 9091:9090 --name calculator-om quantumempress/calculator
+
                  }
         }
 
