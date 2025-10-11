@@ -71,11 +71,11 @@ pipeline {
         stage('Docker Run') {
             steps {
                 script {
-                    // Stop old container if running
-                    bat "docker stop calculator-om || echo 'No existing container to stop'"
-                    bat "docker rm calculator-om || echo 'No existing container to remove'"
-
-                    // Run new container safely on a free port
+//                     // Stop old container if running
+//                     bat "docker stop calculator-om || echo 'No existing container to stop'"
+//                     bat "docker rm calculator-om || echo 'No existing container to remove'"
+//
+//                     // Run new container safely on a free port
                     bat "docker run -d -p 9091:9090 --name calculator-om quantumempress/calculator"
                 }
             }
