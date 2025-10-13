@@ -97,6 +97,9 @@ pipeline {
             slackSend channel: '#oma-test-channel',
                       color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
                       message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
+
+             bat "docker stop calculator-om"
+             bat "docker rm  calculator"
         }
     }
 }
