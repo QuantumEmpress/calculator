@@ -95,7 +95,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            step {
+            steps {
                 bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/calculator.yml"
             }
         }
