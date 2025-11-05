@@ -20,6 +20,13 @@ pipeline {
             }
         }
 
+        stage('check version') {
+                    steps {
+                        bat "docker version"
+                        bat "wsl -d ubuntu ansible --version"
+                    }
+                }
+
         stage('Code Coverage') {
             steps {
                 bat "./gradlew jacocoTestReport"
