@@ -93,6 +93,12 @@ pipeline {
                 bat "./gradlew acceptanceTest"
             }
         }
+
+        stage('Deploy') {
+            step {
+                bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/calculator.yml"
+            }
+        }
     }
 
     post {
