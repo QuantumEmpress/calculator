@@ -83,7 +83,7 @@ pipeline {
 //                     bat "docker rm calculator-om || echo 'No existing container to remove'"
 //
 //                     // Run new container safely on a free port
-                    bat "docker run -d -p 9091:9090 --name calculator-oma quantumempress/calculator"
+                    bat "docker run -d -p 9091:9090 --name calculator-omalicha quantumempress/calculator"
                 }
             }
         }
