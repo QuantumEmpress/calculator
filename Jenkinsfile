@@ -83,7 +83,7 @@ pipeline {
 //                     bat "docker rm calculator-om || echo 'No existing container to remove'"
 //
 //                     // Run new container safely on a free port
-                    bat "docker run -d -p 9091:9090 --name calculator-omalili quantumempress/calculator"
+                    bat "docker run -d -p 9091:9090 --name calculator-oma-1-licha quantumempress/calculator"
                 }
             }
         }
@@ -111,8 +111,8 @@ pipeline {
                       color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
                       message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
 
-             bat "docker stop calculator-oma"
-             bat "docker rm  calculator-oma"
+             bat "docker stop calculator-oma-1-licha"
+             bat "docker rm  calculator-oma-1-licha"
         }
     }
 }
