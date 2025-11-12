@@ -88,9 +88,16 @@ pipeline {
             }
         }
 
+            stage('Docker') {
+                    steps {
+                        bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/docker_playbook.yml"
+                    }
+                }
+
+
         stage('Deploy') {
             steps {
-                bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/calculator.yml"
+                bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/hazelcat.yml"
             }
         }
     }
