@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: calculator
-          image: quantumempress/calculator
+          image: onantabee/calculator
           ports:
             - containerPort: 8080
