@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/QuantumEmpress/calculator.git', branch: 'master'
+                git url: 'https://github.com/Onantabee/calculator.git', branch: 'master'
             }
         }
 
@@ -66,8 +66,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        bat "docker build -t quantumempress/calculator ."
-                        bat "docker push quantumempress/calculator"
+                        bat "docker build -t onantabee/calculator ."
+                        bat "docker push onantabee/calculator"
                     } catch (Exception e) {
                         echo "Docker build/push failed: ${e.message}"
                     }
@@ -83,28 +83,28 @@ pipeline {
 //                     bat "docker rm calculator-om || echo 'No existing container to remove'"
 //
 //                     // Run new container safely on a free port
-                    bat "docker run -d -p 9091:9090 --name calculator-oma-2-licha quantumempress/calculator"
+                    bat "docker run -d -p 9091:9090 --name calculator onantabee/calculator"
                 }
             }
         }
 
             stage('Docker') {
                     steps {
-                        bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/docker_playbook.yml"
+                        bat "wsl -d ubuntu ansible-playbook -i /home/onanta/ansible/hosts /home/onanta/docker_playbook.yml"
                     }
                 }
 
 
         stage('Deploy') {
             steps {
-                bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/hazelcat.yml"
+                bat "wsl -d ubuntu ansible-playbook -i /home/onanta/ansible/hosts /home/onanta/hazelcat.yml"
             }
         }
     }
 
     post {
         always {
-            mail to: 'prexcy99@gmail.com',
+            mail to: 'onantab47@gmail.com',
                  subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
                  body: "Your build completed. Check it here: ${env.BUILD_URL}"
 
@@ -112,8 +112,8 @@ pipeline {
                       color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
                       message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
 
-             bat "docker stop calculator-oma-2-licha"
-             bat "docker rm  calculator-oma-2-licha"
+             bat "docker stop calculator"
+             bat "docker rm  calculator"
         }
     }
 }
