@@ -1,7 +1,9 @@
 .git
 .idea
 .gradle
-build
+build/*
+!build/libs/
+!build/libs/*.jar
 target
 *.log
 *.tmp
