@@ -1,7 +1,14 @@
 pipeline {
     agent { label "pipeline" }
 
+    environment {
+        // Make sure kubectl can find kubeconfig
+        // Jenkins user must already have kubectl access
+        KUBECONFIG = "${env.HOME}/.kube/config"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 git url: 'https://github.com/QuantumEmpress/calculator.git', branch: 'master'
@@ -14,22 +21,16 @@ pipeline {
             }
         }
 
-        stage('Unit Test') {
+        stage('Unit Tests') {
             steps {
                 bat "./gradlew test"
             }
         }
 
-        stage('check version') {
-                    steps {
-                        bat "docker version"
-                        bat "wsl -d ubuntu ansible --version"
-                    }
-                }
-
         stage('Code Coverage') {
             steps {
                 bat "./gradlew jacocoTestReport"
+
                 publishHTML(target: [
                     allowMissing: false,
                     alwaysLinkToLastBuild: true,
@@ -38,6 +39,7 @@ pipeline {
                     reportFiles: 'index.html',
                     reportName: 'JaCoCo Report'
                 ])
+
                 bat "./gradlew jacocoTestCoverageVerification"
             }
         }
@@ -45,6 +47,7 @@ pipeline {
         stage('Static Code Analysis') {
             steps {
                 bat "./gradlew checkstyleMain"
+
                 publishHTML(target: [
                     allowMissing: false,
                     alwaysLinkToLastBuild: true,
@@ -56,7 +59,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Application') {
             steps {
                 bat "./gradlew build"
             }
@@ -65,39 +68,21 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    try {
-                        bat "docker build -t quantumempress/calculator ."
-                        bat "docker push quantumempress/calculator"
-                    } catch (Exception e) {
-                        echo "Docker build/push failed: ${e.message}"
-                    }
+                    bat "docker build -t quantumempress/calculator:latest ."
+                    bat "docker push quantumempress/calculator:latest"
                 }
             }
         }
 
-        stage('Docker Run') {
+        stage('Deploy to Kubernetes') {
             steps {
-                script {
-//                     // Stop old container if running
-//                     bat "docker stop calculator-om || echo 'No existing container to stop'"
-//                     bat "docker rm calculator-om || echo 'No existing container to remove'"
-//
-//                     // Run new container safely on a free port
-                    bat "docker run -d -p 9091:9090 --name calculator-oma-2-licha quantumempress/calculator"
-                }
-            }
-        }
-
-            stage('Docker') {
-                    steps {
-                        bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/docker_playbook.yml"
-                    }
-                }
-
-
-        stage('Deploy') {
-            steps {
-                bat "wsl -d ubuntu ansible-playbook -i /home/omalicha/ansible/hosts /home/omalicha/hazelcat.yml"
+                bat '''
+                kubectl apply -f hazelcast.yaml
+                kubectl apply -f service.yaml
+                kubectl apply -f deployment.yaml
+                kubectl get pods
+                kubectl get services
+                '''
             }
         }
     }
@@ -105,15 +90,12 @@ pipeline {
     post {
         always {
             mail to: 'prexcy99@gmail.com',
-                 subject: "Completed Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "Your build completed. Check it here: ${env.BUILD_URL}"
+                 subject: "Pipeline Completed: ${currentBuild.fullDisplayName}",
+                 body: "Build finished with status: ${currentBuild.currentResult}\n\n${env.BUILD_URL}"
 
             slackSend channel: '#oma-test-channel',
                       color: currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red',
                       message: "Pipeline ${currentBuild.fullDisplayName} finished with result: ${currentBuild.currentResult}"
-
-             bat "docker stop calculator-oma-2-licha"
-             bat "docker rm  calculator-oma-2-licha"
         }
     }
 }

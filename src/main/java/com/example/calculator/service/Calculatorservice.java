@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class Calculatorservice {
+    final static double PI =3.142;
    @Cacheable("sum")
     public int sum(int a,  int b){
        try {

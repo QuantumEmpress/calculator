@@ -1,3 +1,30 @@
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: calculator-deployment
+#  labels:
+#    app: calculator
+#spec:
+#  replicas: 1
+#  strategy:
+#    type: RollingUpdate
+#    rollingUpdate:
+#      maxUnavailable: 50%
+#      maxSurge: 0
+#  selector:
+#    matchLabels:
+#      app: calculator
+#  template:
+#    metadata:
+#      labels:
+#        app: calculator
+#    spec:
+#      containers:
+#        - name: calculator
+#          image: quantumempress/calc:caching
+#          ports:
+#            - containerPort: 8080
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +32,12 @@ metadata:
   labels:
     app: calculator
 spec:
-  replicas: 3
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 50%
+      maxSurge: 0
   selector:
     matchLabels:
       app: calculator
@@ -16,6 +48,7 @@ spec:
     spec:
       containers:
         - name: calculator
-          image: quantumempress/calc
+          image: quantumempress/calculator:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
